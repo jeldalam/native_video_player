@@ -247,8 +247,12 @@ extension NativeVideoPlayerViewController {
 
     private func addPeriodicTimeObserver() {
         removePeriodicTimeObserver()
+        // 4 fps — Flutter processes every platform channel message from native
+        // even when no Dart listener is registered. 120 fps (8 ms interval)
+        // saturates the platform channel and causes UI freeze, especially on
+        // Simulator. VideoSeekBar polls via Timer.periodic(500ms) independently.
         timeObserver = player.addPeriodicTimeObserver(
-            forInterval: CMTime(seconds: 1.0/120.0, preferredTimescale: CMTimeScale(NSEC_PER_SEC)),
+            forInterval: CMTime(seconds: 0.25, preferredTimescale: CMTimeScale(NSEC_PER_SEC)),
             queue: .main
         ) { [weak self] time in
             guard let self = self else { return }
